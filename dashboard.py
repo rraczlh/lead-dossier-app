@@ -21,17 +21,21 @@ def load_dossiers():
             with open(file, 'r', encoding='utf-8') as f:
                 raw_content = f.read()
             
-            # --- PARSING ---
+            # --- PARSING LOGIC ---
+            # We look for the FIRST occurrence of "---"
+            # This automatically skips "Generated Realtime" and "0. METADATA HEADER"
             start_index = raw_content.find("---")
             
             if start_index != -1:
+                # Clean content for the YAML parser
                 clean_content_for_parser = raw_content[start_index:]
                 post = frontmatter.loads(clean_content_for_parser)
                 row = post.metadata
-                row['content'] = raw_content 
-                row['filename'] = os.path.basename(file) # Just the filename, not path
+                row['content'] = raw_content # Keep original text for display
+                row['filename'] = os.path.basename(file)
                 data.append(row)
             else:
+                # Fallback if no YAML found
                 row = {'content': raw_content, 'filename': os.path.basename(file)}
                 data.append(row)
                 
@@ -40,13 +44,6 @@ def load_dossiers():
             
     df = pd.DataFrame(data)
     
-    # --- NORMALIZATION (Handle Old vs New Prompt Keys) ---
-    # We map old keys (stack) to new keys (tech) if the new ones don't exist
-    if 'detected_tech' not in df.columns and 'detected_stack' in df.columns:
-        df['detected_tech'] = df['detected_stack']
-    if 'overlap_tech' not in df.columns and 'tech_overlap' in df.columns:
-        df['overlap_tech'] = df['tech_overlap']
-
     # --- SAFETY FIX: Ensure columns exist ---
     required_cols = ['company_name', 'verified_revenue_usd', 'verified_revenue_text', 'detected_tech', 'overlap_tech']
     for col in required_cols:
@@ -56,18 +53,18 @@ def load_dossiers():
     # --- DATA CLEANING & CALCULATIONS ---
     
     # 1. Extract ID from Filename (Assumes format: 0001_name.md)
-    # Splits by '_' and takes the first part.
+    # If no underscore, defaults to '0000'
     df['ID'] = df['filename'].apply(lambda x: x.split('_')[0] if '_' in x else '0000')
     
-    # 2. Ensure lists are lists
+    # 2. Ensure lists are lists (Handle None/NaN)
     df['detected_tech'] = df['detected_tech'].apply(lambda x: x if isinstance(x, list) else [])
     df['overlap_tech'] = df['overlap_tech'].apply(lambda x: x if isinstance(x, list) else [])
     
     # 3. Calculate "Missing Tech" (Detected - Overlap)
-    # We use sets to subtract, then convert back to list
+    # This shows tech they have that we DO NOT match
     df['missing_tech'] = df.apply(lambda x: list(set(x['detected_tech']) - set(x['overlap_tech'])), axis=1)
     
-    # 4. Recalculate Scores (Trust Python, not AI)
+    # 4. Calculate Scores (Python Math)
     df['overlap_count'] = df['overlap_tech'].apply(len)
     df['total_count'] = df['detected_tech'].apply(len)
     
@@ -112,7 +109,7 @@ if not df.empty:
         filtered_df = filtered_df[filtered_df['overlap_tech'].apply(lambda x: any(item in selected_tech for item in x))]
 
     # --- MAIN VIEW ---
-    col1, col2 = st.columns([1.5, 1]) # Made left column slightly wider for the extra data
+    col1, col2 = st.columns([1.5, 1]) # Left column wider for table
 
     with col1:
         st.subheader(f"Matches Found: {len(filtered_df)}")
