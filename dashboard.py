@@ -22,20 +22,16 @@ def load_dossiers():
                 raw_content = f.read()
             
             # --- PARSING LOGIC ---
-            # We look for the FIRST occurrence of "---"
-            # This automatically skips "Generated Realtime" and "0. METADATA HEADER"
             start_index = raw_content.find("---")
             
             if start_index != -1:
-                # Clean content for the YAML parser
                 clean_content_for_parser = raw_content[start_index:]
                 post = frontmatter.loads(clean_content_for_parser)
                 row = post.metadata
-                row['content'] = raw_content # Keep original text for display
+                row['content'] = raw_content 
                 row['filename'] = os.path.basename(file)
                 data.append(row)
             else:
-                # Fallback if no YAML found
                 row = {'content': raw_content, 'filename': os.path.basename(file)}
                 data.append(row)
                 
@@ -44,37 +40,21 @@ def load_dossiers():
             
     df = pd.DataFrame(data)
     
-    # --- SAFETY FIX: Ensure columns exist ---
+    # --- SAFETY FIX ---
     required_cols = ['company_name', 'verified_revenue_usd', 'verified_revenue_text', 'detected_tech', 'overlap_tech']
     for col in required_cols:
         if col not in df.columns:
             df[col] = None 
             
-    # --- DATA CLEANING & CALCULATIONS ---
-    
-    # 1. Extract ID from Filename (Assumes format: 0001_name.md)
-    # If no underscore, defaults to '0000'
+    # --- DATA CLEANING ---
     df['ID'] = df['filename'].apply(lambda x: x.split('_')[0] if '_' in x else '0000')
-    
-    # 2. Ensure lists are lists (Handle None/NaN)
     df['detected_tech'] = df['detected_tech'].apply(lambda x: x if isinstance(x, list) else [])
     df['overlap_tech'] = df['overlap_tech'].apply(lambda x: x if isinstance(x, list) else [])
-    
-    # 3. Calculate "Missing Tech" (Detected - Overlap)
-    # This shows tech they have that we DO NOT match
     df['missing_tech'] = df.apply(lambda x: list(set(x['detected_tech']) - set(x['overlap_tech'])), axis=1)
-    
-    # 4. Calculate Scores (Python Math)
     df['overlap_count'] = df['overlap_tech'].apply(len)
     df['total_count'] = df['detected_tech'].apply(len)
-    
-    # 5. Revenue Cleaning
     df['verified_revenue_usd'] = pd.to_numeric(df['verified_revenue_usd'], errors='coerce').fillna(0).astype(int)
-
-    # 6. Fallback Name
     df['Company Name'] = df.apply(lambda x: x['company_name'] if pd.notna(x['company_name']) else x['filename'], axis=1)
-    
-    # 7. Create "X out of Y" String
     df['Match Ratio'] = df.apply(lambda x: f"{x['overlap_count']} / {x['total_count']}", axis=1)
 
     return df
@@ -86,19 +66,24 @@ if not df.empty:
     # --- SIDEBAR FILTERS ---
     st.sidebar.header("Filter Leads")
     
-    # 1. Tech Filter
+    # Layout Control
+    st.sidebar.markdown("---")
+    st.sidebar.caption("Layout Settings")
+    # This slider controls the ratio between Left (Table) and Right (Dossier)
+    layout_width = st.sidebar.slider("Table Width %", 30, 80, 60, 5) / 100
+    
+    st.sidebar.markdown("---")
+    
+    # Filters
     all_techs = sorted(list(set([item for sublist in df['overlap_tech'] for item in sublist])))
     selected_tech = st.sidebar.multiselect("Tech Stack Match", all_techs)
     
-    # 2. Revenue Filter (Formatted)
     max_rev = int(df['verified_revenue_usd'].max()) if not df.empty else 1000
-    # format="%dM" makes it display as "1000M"
     rev_range = st.sidebar.slider("Revenue Range (USD)", 0, max_rev + 100, (0, max_rev + 100), format="$%dM")
     
-    # 3. Score Filter
     min_score = st.sidebar.slider("Min. Overlap Count", 0, 20, 0)
     
-    # --- APPLY FILTERS ---
+    # Apply Filters
     filtered_df = df[
         (df['overlap_count'] >= min_score) & 
         (df['verified_revenue_usd'] >= rev_range[0]) & 
@@ -109,18 +94,18 @@ if not df.empty:
         filtered_df = filtered_df[filtered_df['overlap_tech'].apply(lambda x: any(item in selected_tech for item in x))]
 
     # --- MAIN VIEW ---
-    col1, col2 = st.columns([1.5, 1]) # Left column wider for table
+    # Use the slider value to set column width
+    col1, col2 = st.columns([layout_width, 1 - layout_width])
 
     with col1:
         st.subheader(f"Matches Found: {len(filtered_df)}")
         
         if not filtered_df.empty:
-            # Sort by ID
             filtered_df = filtered_df.sort_values(by='ID')
             
             selected_company = st.selectbox("Select Company", filtered_df['Company Name'])
             
-            # RENAME COLUMNS FOR DISPLAY
+            # Prepare Table Data
             display_cols = {
                 'ID': 'ID',
                 'Company Name': 'Company',
@@ -130,11 +115,22 @@ if not df.empty:
                 'missing_tech': 'Missing Tech'
             }
             
-            # Show the table
+            table_data = filtered_df[display_cols.keys()].rename(columns=display_cols)
+            
+            # CONFIGURABLE TABLE
             st.dataframe(
-                filtered_df[display_cols.keys()].rename(columns=display_cols), 
+                table_data,
                 use_container_width=True,
-                hide_index=True
+                hide_index=True,
+                column_config={
+                    "ID": st.column_config.TextColumn("ID", width="small"),
+                    "Company": st.column_config.TextColumn("Company", width="medium"),
+                    "Revenue": st.column_config.TextColumn("Revenue", width="small"),
+                    "Ratio": st.column_config.TextColumn("Ratio", width="small"),
+                    # Display Tech as colorful tags
+                    "Matched Tech": st.column_config.ListColumn("Matched Tech", width="large"),
+                    "Missing Tech": st.column_config.ListColumn("Missing Tech", width="large"),
+                }
             )
         else:
             selected_company = None
@@ -145,11 +141,9 @@ if not df.empty:
             st.markdown("---")
             row = filtered_df[filtered_df['Company Name'] == selected_company].iloc[0]
             
-            # Header
             st.title(f"{row['ID']} - {row['Company Name']}")
             st.caption(f"Revenue: {row['verified_revenue_text']} | Tech Match: {row['Match Ratio']}")
             
-            # Content
             st.markdown(row['content'])
 else:
     st.warning("No files found in 'analysis' folder.")
