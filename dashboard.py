@@ -66,35 +66,52 @@ if not df.empty:
     # --- SIDEBAR FILTERS ---
     st.sidebar.header("Filter Leads")
     
-    # Layout Control
+    # --- LAYOUT SETTINGS ---
     st.sidebar.markdown("---")
     st.sidebar.caption("Layout Settings")
-    # This slider controls the ratio between Left (Table) and Right (Dossier)
+    
+    # 1. Table Width Slider
     layout_width = st.sidebar.slider("Table Width %", 30, 80, 60, 5) / 100
+    
+    # 2. Table Height Slider (New)
+    table_height = st.sidebar.slider("Table Height (px)", 200, 1000, 500, 50)
     
     st.sidebar.markdown("---")
     
-    # Filters
+    # --- REVENUE FILTER (Slider + Text Box) ---
+    st.sidebar.subheader("Revenue (USD Millions)")
+    
+    # Calculate Max Revenue for defaults
+    max_rev_data = int(df['verified_revenue_usd'].max()) if not df.empty else 1000
+    
+    # A. The Slider (Quick Range)
+    slider_range = st.sidebar.slider("Quick Range", 0, max_rev_data + 100, (0, max_rev_data + 100), format="$%dM")
+    
+    # B. The Text Boxes (Precise Input)
+    rc1, rc2 = st.sidebar.columns(2)
+    with rc1:
+        min_rev_input = st.number_input("Min ($M)", min_value=0, value=slider_range[0])
+    with rc2:
+        max_rev_input = st.number_input("Max ($M)", min_value=0, value=slider_range[1])
+
+    # --- OTHER FILTERS ---
     all_techs = sorted(list(set([item for sublist in df['overlap_tech'] for item in sublist])))
     selected_tech = st.sidebar.multiselect("Tech Stack Match", all_techs)
     
-    max_rev = int(df['verified_revenue_usd'].max()) if not df.empty else 1000
-    rev_range = st.sidebar.slider("Revenue Range (USD)", 0, max_rev + 100, (0, max_rev + 100), format="$%dM")
-    
     min_score = st.sidebar.slider("Min. Overlap Count", 0, 20, 0)
     
-    # Apply Filters
+    # --- APPLY FILTERS ---
+    # Logic: We use the Text Inputs as the final authority (since they default to the slider anyway)
     filtered_df = df[
         (df['overlap_count'] >= min_score) & 
-        (df['verified_revenue_usd'] >= rev_range[0]) & 
-        (df['verified_revenue_usd'] <= rev_range[1])
+        (df['verified_revenue_usd'] >= min_rev_input) & 
+        (df['verified_revenue_usd'] <= max_rev_input)
     ]
     
     if selected_tech:
         filtered_df = filtered_df[filtered_df['overlap_tech'].apply(lambda x: any(item in selected_tech for item in x))]
 
     # --- MAIN VIEW ---
-    # Use the slider value to set column width
     col1, col2 = st.columns([layout_width, 1 - layout_width])
 
     with col1:
@@ -120,6 +137,7 @@ if not df.empty:
             # CONFIGURABLE TABLE
             st.dataframe(
                 table_data,
+                height=table_height, # Uses the sidebar setting
                 use_container_width=True,
                 hide_index=True,
                 column_config={
@@ -127,7 +145,6 @@ if not df.empty:
                     "Company": st.column_config.TextColumn("Company", width="medium"),
                     "Revenue": st.column_config.TextColumn("Revenue", width="small"),
                     "Ratio": st.column_config.TextColumn("Ratio", width="small"),
-                    # Display Tech as colorful tags
                     "Matched Tech": st.column_config.ListColumn("Matched Tech", width="large"),
                     "Missing Tech": st.column_config.ListColumn("Missing Tech", width="large"),
                 }
