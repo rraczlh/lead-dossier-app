@@ -45,18 +45,26 @@ def load_dossiers():
         if col not in df.columns:
             df[col] = None 
             
-    # Data Cleaning
-    df['tech_overlap'] = df['tech_overlap'].apply(lambda x: x if isinstance(x, list) else [])
-    df['overlap_score'] = df['overlap_score'].fillna(0).astype(int)
-    df['total_stack_count'] = df['total_stack_count'].fillna(0).astype(int)
+    # --- DATA CLEANING & CALCULATIONS ---
     
-    # Revenue Cleaning (Handle cases where AI output text instead of int)
+    # 1. Ensure lists are lists
+    df['tech_overlap'] = df['tech_overlap'].apply(lambda x: x if isinstance(x, list) else [])
+    
+    # 2. FORCE RE-CALCULATION OF SCORE (Python counts the list, ignoring the AI's number)
+    df['overlap_score'] = df['tech_overlap'].apply(lambda x: len(x))
+    
+    # 3. Handle Total Stack Count (Trust AI or fallback to overlap count if missing)
+    df['total_stack_count'] = df['total_stack_count'].fillna(0).astype(int)
+    # Logic: If total count is smaller than overlap (AI error), fix it to be at least the overlap count
+    df['total_stack_count'] = df.apply(lambda x: max(x['total_stack_count'], x['overlap_score']), axis=1)
+    
+    # 4. Revenue Cleaning
     df['verified_revenue_usd'] = pd.to_numeric(df['verified_revenue_usd'], errors='coerce').fillna(0).astype(int)
 
-    # Fallback Name
+    # 5. Fallback Name
     df['Company Name'] = df.apply(lambda x: x['company_name'] if pd.notna(x['company_name']) else x['filename'], axis=1)
     
-    # Create "X out of Y" Score String
+    # 6. Create "X out of Y" String
     df['Match Ratio'] = df.apply(lambda x: f"{x['overlap_score']} / {x['total_stack_count']}", axis=1)
 
     return df
@@ -72,7 +80,7 @@ if not df.empty:
     all_techs = sorted(list(set([item for sublist in df['tech_overlap'] for item in sublist])))
     selected_tech = st.sidebar.multiselect("Tech Stack Match", all_techs)
     
-    # 2. Revenue Filter (Slider in Millions)
+    # 2. Revenue Filter
     max_rev = int(df['verified_revenue_usd'].max()) if not df.empty else 1000
     rev_range = st.sidebar.slider("Revenue Range (Millions USD)", 0, max_rev + 100, (0, max_rev + 100))
     
