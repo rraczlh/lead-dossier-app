@@ -2,6 +2,7 @@ import streamlit as st
 import glob
 import frontmatter
 import pandas as pd
+import os
 
 # 1. Setup Page
 st.set_page_config(layout="wide", page_title="Localhost Lead Intelligence")
@@ -28,10 +29,10 @@ def load_dossiers():
                 post = frontmatter.loads(clean_content_for_parser)
                 row = post.metadata
                 row['content'] = raw_content 
-                row['filename'] = file
+                row['filename'] = os.path.basename(file) # Just the filename, not path
                 data.append(row)
             else:
-                row = {'content': raw_content, 'filename': file}
+                row = {'content': raw_content, 'filename': os.path.basename(file)}
                 data.append(row)
                 
         except Exception as e:
@@ -39,33 +40,45 @@ def load_dossiers():
             
     df = pd.DataFrame(data)
     
+    # --- NORMALIZATION (Handle Old vs New Prompt Keys) ---
+    # We map old keys (stack) to new keys (tech) if the new ones don't exist
+    if 'detected_tech' not in df.columns and 'detected_stack' in df.columns:
+        df['detected_tech'] = df['detected_stack']
+    if 'overlap_tech' not in df.columns and 'tech_overlap' in df.columns:
+        df['overlap_tech'] = df['tech_overlap']
+
     # --- SAFETY FIX: Ensure columns exist ---
-    required_cols = ['company_name', 'verified_revenue_usd', 'verified_revenue_text', 'overlap_score', 'total_stack_count', 'tech_overlap']
+    required_cols = ['company_name', 'verified_revenue_usd', 'verified_revenue_text', 'detected_tech', 'overlap_tech']
     for col in required_cols:
         if col not in df.columns:
             df[col] = None 
             
     # --- DATA CLEANING & CALCULATIONS ---
     
-    # 1. Ensure lists are lists
-    df['tech_overlap'] = df['tech_overlap'].apply(lambda x: x if isinstance(x, list) else [])
+    # 1. Extract ID from Filename (Assumes format: 0001_name.md)
+    # Splits by '_' and takes the first part.
+    df['ID'] = df['filename'].apply(lambda x: x.split('_')[0] if '_' in x else '0000')
     
-    # 2. FORCE RE-CALCULATION OF SCORE (Python counts the list, ignoring the AI's number)
-    df['overlap_score'] = df['tech_overlap'].apply(lambda x: len(x))
+    # 2. Ensure lists are lists
+    df['detected_tech'] = df['detected_tech'].apply(lambda x: x if isinstance(x, list) else [])
+    df['overlap_tech'] = df['overlap_tech'].apply(lambda x: x if isinstance(x, list) else [])
     
-    # 3. Handle Total Stack Count (Trust AI or fallback to overlap count if missing)
-    df['total_stack_count'] = df['total_stack_count'].fillna(0).astype(int)
-    # Logic: If total count is smaller than overlap (AI error), fix it to be at least the overlap count
-    df['total_stack_count'] = df.apply(lambda x: max(x['total_stack_count'], x['overlap_score']), axis=1)
+    # 3. Calculate "Missing Tech" (Detected - Overlap)
+    # We use sets to subtract, then convert back to list
+    df['missing_tech'] = df.apply(lambda x: list(set(x['detected_tech']) - set(x['overlap_tech'])), axis=1)
     
-    # 4. Revenue Cleaning
+    # 4. Recalculate Scores (Trust Python, not AI)
+    df['overlap_count'] = df['overlap_tech'].apply(len)
+    df['total_count'] = df['detected_tech'].apply(len)
+    
+    # 5. Revenue Cleaning
     df['verified_revenue_usd'] = pd.to_numeric(df['verified_revenue_usd'], errors='coerce').fillna(0).astype(int)
 
-    # 5. Fallback Name
+    # 6. Fallback Name
     df['Company Name'] = df.apply(lambda x: x['company_name'] if pd.notna(x['company_name']) else x['filename'], axis=1)
     
-    # 6. Create "X out of Y" String
-    df['Match Ratio'] = df.apply(lambda x: f"{x['overlap_score']} / {x['total_stack_count']}", axis=1)
+    # 7. Create "X out of Y" String
+    df['Match Ratio'] = df.apply(lambda x: f"{x['overlap_count']} / {x['total_count']}", axis=1)
 
     return df
 
@@ -77,41 +90,47 @@ if not df.empty:
     st.sidebar.header("Filter Leads")
     
     # 1. Tech Filter
-    all_techs = sorted(list(set([item for sublist in df['tech_overlap'] for item in sublist])))
+    all_techs = sorted(list(set([item for sublist in df['overlap_tech'] for item in sublist])))
     selected_tech = st.sidebar.multiselect("Tech Stack Match", all_techs)
     
-    # 2. Revenue Filter
+    # 2. Revenue Filter (Formatted)
     max_rev = int(df['verified_revenue_usd'].max()) if not df.empty else 1000
-    rev_range = st.sidebar.slider("Revenue Range (Millions USD)", 0, max_rev + 100, (0, max_rev + 100))
+    # format="%dM" makes it display as "1000M"
+    rev_range = st.sidebar.slider("Revenue Range (USD)", 0, max_rev + 100, (0, max_rev + 100), format="$%dM")
     
     # 3. Score Filter
-    min_score = st.sidebar.slider("Min. Overlap Score", 0, 20, 0)
+    min_score = st.sidebar.slider("Min. Overlap Count", 0, 20, 0)
     
     # --- APPLY FILTERS ---
     filtered_df = df[
-        (df['overlap_score'] >= min_score) & 
+        (df['overlap_count'] >= min_score) & 
         (df['verified_revenue_usd'] >= rev_range[0]) & 
         (df['verified_revenue_usd'] <= rev_range[1])
     ]
     
     if selected_tech:
-        filtered_df = filtered_df[filtered_df['tech_overlap'].apply(lambda x: any(item in selected_tech for item in x))]
+        filtered_df = filtered_df[filtered_df['overlap_tech'].apply(lambda x: any(item in selected_tech for item in x))]
 
     # --- MAIN VIEW ---
-    col1, col2 = st.columns([1, 1])
+    col1, col2 = st.columns([1.5, 1]) # Made left column slightly wider for the extra data
 
     with col1:
         st.subheader(f"Matches Found: {len(filtered_df)}")
         
         if not filtered_df.empty:
+            # Sort by ID
+            filtered_df = filtered_df.sort_values(by='ID')
+            
             selected_company = st.selectbox("Select Company", filtered_df['Company Name'])
             
             # RENAME COLUMNS FOR DISPLAY
             display_cols = {
+                'ID': 'ID',
                 'Company Name': 'Company',
                 'verified_revenue_text': 'Revenue',
-                'Match Ratio': 'Tech Match',
-                'tech_overlap': 'Stack'
+                'Match Ratio': 'Ratio',
+                'overlap_tech': 'Matched Tech',
+                'missing_tech': 'Missing Tech'
             }
             
             # Show the table
@@ -130,7 +149,7 @@ if not df.empty:
             row = filtered_df[filtered_df['Company Name'] == selected_company].iloc[0]
             
             # Header
-            st.title(row['Company Name'])
+            st.title(f"{row['ID']} - {row['Company Name']}")
             st.caption(f"Revenue: {row['verified_revenue_text']} | Tech Match: {row['Match Ratio']}")
             
             # Content
