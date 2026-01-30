@@ -2,7 +2,7 @@ import streamlit as st
 import glob
 import frontmatter
 import pandas as pd
-import osa
+import os
 
 # 1. Setup Page
 st.set_page_config(layout="wide", page_title="Localhost Lead Intelligence")
