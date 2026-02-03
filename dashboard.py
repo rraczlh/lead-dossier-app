@@ -8,7 +8,86 @@ import plotly.express as px
 # 1. Setup Page
 st.set_page_config(layout="wide", page_title="Localhost Lead Intelligence")
 
-# 2. Load Data Function
+# 2. Capability Matrix definition
+CAPABILITY_MATRIX = {
+    "Python": ("Programming Languages", "Core"),
+    "Java": ("Programming Languages", "Core"),
+    "C#": ("Programming Languages", "Core"),
+    "JavaScript": ("Programming Languages", "Core"),
+    "TypeScript": ("Programming Languages", "Core"),
+    "Swift": ("Programming Languages", "Core"),
+    "Kotlin": ("Programming Languages", "Core"),
+    "Go": ("Programming Languages", "Core"),
+    "Ruby": ("Programming Languages", "Core"),
+    "Scala": ("Programming Languages", "Core"),
+    "PHP": ("Programming Languages", "Core"),
+    "Power Fx": ("Programming Languages", "Core"),
+    
+    "AWS": ("Cloud & DevOps", "Providers"),
+    "Azure": ("Cloud & DevOps", "Providers"),
+    "Firebase": ("Cloud & DevOps", "Providers"),
+    "Salesforce": ("Cloud & DevOps", "Providers"),
+    
+    "Kubernetes": ("Cloud & DevOps", "Infrastructure"),
+    "CDK": ("Cloud & DevOps", "Infrastructure"),
+    "Bicep": ("Cloud & DevOps", "Infrastructure"),
+    "CloudFormation": ("Cloud & DevOps", "Infrastructure"),
+    "Docker": ("Cloud & DevOps", "Infrastructure"),
+    
+    "GitHub Actions": ("Cloud & DevOps", "CI/CD"),
+    "Azure DevOps": ("Cloud & DevOps", "CI/CD"),
+    "Git": ("Cloud & DevOps", "CI/CD"),
+    "Airflow": ("Cloud & DevOps", "CI/CD"),
+    
+    "Grafana": ("Observability & ITSM", "Monitoring"),
+    "Prometheus": ("Observability & ITSM", "Monitoring"),
+    "AppDynamics": ("Observability & ITSM", "Monitoring"),
+    "ThousandEyes": ("Observability & ITSM", "Monitoring"),
+    "CloudWatch": ("Observability & ITSM", "Monitoring"),
+    
+    "ServiceNow": ("Observability & ITSM", "Incident Management"),
+    "BigPanda": ("Observability & ITSM", "Incident Management"),
+    
+    ".NET Core": ("Application Dev", "Backend"),
+    "Node.js": ("Application Dev", "Backend"),
+    "FastAPI": ("Application Dev", "Backend"),
+    "Rails": ("Application Dev", "Backend"),
+    "Spring": ("Application Dev", "Backend"),
+    "RabbitMQ": ("Application Dev", "Backend"),
+    
+    "React": ("Application Dev", "Frontend"),
+    "Next.js": ("Application Dev", "Frontend"),
+    "Angular": ("Application Dev", "Frontend"),
+    "Tailwind": ("Application Dev", "Frontend"),
+    "Redux": ("Application Dev", "Frontend"),
+    
+    "React Native": ("Application Dev", "Mobile"),
+    "Flutter": ("Application Dev", "Mobile"),
+    "SwiftUI": ("Application Dev", "Mobile"),
+    "Jetpack Compose": ("Application Dev", "Mobile"),
+    
+    "Pandas": ("Data Science & ML", "Core"),
+    "Numpy": ("Data Science & ML", "Core"),
+    "Polars": ("Data Science & ML", "Core"),
+    "Scikit-learn": ("Data Science & ML", "Core"),
+    "PyTorch": ("Data Science & ML", "Core"),
+    "TensorFlow": ("Data Science & ML", "Core"),
+    
+    "Langchain": ("Data Science & ML", "Generative AI"),
+    "OpenAI": ("Data Science & ML", "Generative AI"),
+    "ChromaDB": ("Data Science & ML", "Generative AI"),
+    "Langfuse": ("Data Science & ML", "Generative AI"),
+    
+    "Postgres": ("Databases", "Relational"),
+    "MySQL": ("Databases", "Relational"),
+    "SQL Server": ("Databases", "Relational"),
+    "Oracle": ("Databases", "Relational"),
+    "DynamoDB": ("Databases", "NoSQL"),
+    "Redis": ("Databases", "NoSQL"),
+    "Snowflake": ("Databases", "Data Warehouse")
+}
+
+# 3. Load Data Function
 @st.cache_data
 def load_dossiers():
     data = []
@@ -50,7 +129,14 @@ def load_dossiers():
     # --- DATA CLEANING ---
     df['ID'] = df['filename'].apply(lambda x: x.split('_')[0] if '_' in x else '0000')
     df['detected_tech'] = df['detected_tech'].apply(lambda x: x if isinstance(x, list) else [])
-    df['overlap_tech'] = df['overlap_tech'].apply(lambda x: x if isinstance(x, list) else [])
+    
+    # DYNAMIC OVERLAP CALCULATION (Override dossier YAML)
+    def compute_overlap(row):
+        detected = row['detected_tech']
+        return [t for t in detected if t in CAPABILITY_MATRIX]
+        
+    df['overlap_tech'] = df.apply(compute_overlap, axis=1)
+    
     df['missing_tech'] = df.apply(lambda x: list(set(x['detected_tech']) - set(x['overlap_tech'])), axis=1)
     df['overlap_count'] = df['overlap_tech'].apply(len)
     df['total_count'] = df['detected_tech'].apply(len)
@@ -287,83 +373,7 @@ if not df.empty:
                     st.markdown(full_content)
 
     # --- TAB 2 AND TAB 3 DATA PREP ---
-    CAPABILITY_MATRIX = {
-        "Python": ("Programming Languages", "Core"),
-        "Java": ("Programming Languages", "Core"),
-        "C#": ("Programming Languages", "Core"),
-        "JavaScript": ("Programming Languages", "Core"),
-        "TypeScript": ("Programming Languages", "Core"),
-        "Swift": ("Programming Languages", "Core"),
-        "Kotlin": ("Programming Languages", "Core"),
-        "Go": ("Programming Languages", "Core"),
-        "Ruby": ("Programming Languages", "Core"),
-        "Scala": ("Programming Languages", "Core"),
-        "PHP": ("Programming Languages", "Core"),
-        "Power Fx": ("Programming Languages", "Core"),
-        
-        "AWS": ("Cloud & DevOps", "Providers"),
-        "Azure": ("Cloud & DevOps", "Providers"),
-        "Firebase": ("Cloud & DevOps", "Providers"),
-        "Salesforce": ("Cloud & DevOps", "Providers"),
-        
-        "Kubernetes": ("Cloud & DevOps", "Infrastructure"),
-        "CDK": ("Cloud & DevOps", "Infrastructure"),
-        "Bicep": ("Cloud & DevOps", "Infrastructure"),
-        "CloudFormation": ("Cloud & DevOps", "Infrastructure"),
-        "Docker": ("Cloud & DevOps", "Infrastructure"),
-        
-        "GitHub Actions": ("Cloud & DevOps", "CI/CD"),
-        "Azure DevOps": ("Cloud & DevOps", "CI/CD"),
-        "Git": ("Cloud & DevOps", "CI/CD"),
-        "Airflow": ("Cloud & DevOps", "CI/CD"),
-        
-        "Grafana": ("Observability & ITSM", "Monitoring"),
-        "Prometheus": ("Observability & ITSM", "Monitoring"),
-        "AppDynamics": ("Observability & ITSM", "Monitoring"),
-        "ThousandEyes": ("Observability & ITSM", "Monitoring"),
-        "CloudWatch": ("Observability & ITSM", "Monitoring"),
-        
-        "ServiceNow": ("Observability & ITSM", "Incident Management"),
-        "BigPanda": ("Observability & ITSM", "Incident Management"),
-        
-        ".NET Core": ("Application Dev", "Backend"),
-        "Node.js": ("Application Dev", "Backend"),
-        "FastAPI": ("Application Dev", "Backend"),
-        "Rails": ("Application Dev", "Backend"),
-        "Spring": ("Application Dev", "Backend"),
-        "RabbitMQ": ("Application Dev", "Backend"),
-        
-        "React": ("Application Dev", "Frontend"),
-        "Next.js": ("Application Dev", "Frontend"),
-        "Angular": ("Application Dev", "Frontend"),
-        "Tailwind": ("Application Dev", "Frontend"),
-        "Redux": ("Application Dev", "Frontend"),
-        
-        "React Native": ("Application Dev", "Mobile"),
-        "Flutter": ("Application Dev", "Mobile"),
-        "SwiftUI": ("Application Dev", "Mobile"),
-        "Jetpack Compose": ("Application Dev", "Mobile"),
-        
-        "Pandas": ("Data Science & ML", "Core"),
-        "Numpy": ("Data Science & ML", "Core"),
-        "Polars": ("Data Science & ML", "Core"),
-        "Scikit-learn": ("Data Science & ML", "Core"),
-        "PyTorch": ("Data Science & ML", "Core"),
-        "TensorFlow": ("Data Science & ML", "Core"),
-        
-        "Langchain": ("Data Science & ML", "Generative AI"),
-        "OpenAI": ("Data Science & ML", "Generative AI"),
-        "ChromaDB": ("Data Science & ML", "Generative AI"),
-        "Langfuse": ("Data Science & ML", "Generative AI"),
-        
-        "Postgres": ("Databases", "Relational"),
-        "MySQL": ("Databases", "Relational"),
-        "SQL Server": ("Databases", "Relational"),
-        "Oracle": ("Databases", "Relational"),
-        "DynamoDB": ("Databases", "NoSQL"),
-        "Redis": ("Databases", "NoSQL"),
-        "Snowflake": ("Databases", "Data Warehouse")
-    }
+    # Using the global CAPABILITY_MATRIX
 
     with tab2:
         st.subheader("Technology Stack Insights")
