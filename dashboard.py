@@ -3,6 +3,7 @@ import glob
 import frontmatter
 import pandas as pd
 import os
+import plotly.express as px
 
 # 1. Setup Page
 st.set_page_config(layout="wide", page_title="Localhost Lead Intelligence")
@@ -111,56 +112,94 @@ if not df.empty:
     if selected_tech:
         filtered_df = filtered_df[filtered_df['overlap_tech'].apply(lambda x: any(item in selected_tech for item in x))]
 
-    # --- MAIN VIEW ---
-    col1, col2 = st.columns([layout_width, 1 - layout_width])
+    # --- MAIN TABS ---
+    tab1, tab2 = st.tabs(["Lead Explorer", "Tech Insights"])
 
-    with col1:
-        st.subheader(f"Matches Found: {len(filtered_df)}")
-        
-        if not filtered_df.empty:
-            filtered_df = filtered_df.sort_values(by='ID')
+    with tab1:
+        # --- MAIN VIEW ---
+        col1, col2 = st.columns([layout_width, 1 - layout_width])
+
+        with col1:
+            st.subheader(f"Matches Found: {len(filtered_df)}")
             
-            selected_company = st.selectbox("Select Company", filtered_df['Company Name'])
-            
-            # Prepare Table Data
-            display_cols = {
-                'ID': 'ID',
-                'Company Name': 'Company',
-                'verified_revenue_text': 'Revenue',
-                'Match Ratio': 'Ratio',
-                'overlap_tech': 'Matched Tech',
-                'missing_tech': 'Missing Tech'
-            }
-            
-            table_data = filtered_df[display_cols.keys()].rename(columns=display_cols)
-            
-            # CONFIGURABLE TABLE
-            st.dataframe(
-                table_data,
-                height=table_height, # Uses the sidebar setting
-                use_container_width=True,
-                hide_index=True,
-                column_config={
-                    "ID": st.column_config.TextColumn("ID", width="small"),
-                    "Company": st.column_config.TextColumn("Company", width="medium"),
-                    "Revenue": st.column_config.TextColumn("Revenue", width="small"),
-                    "Ratio": st.column_config.TextColumn("Ratio", width="small"),
-                    "Matched Tech": st.column_config.ListColumn("Matched Tech", width="large"),
-                    "Missing Tech": st.column_config.ListColumn("Missing Tech", width="large"),
+            if not filtered_df.empty:
+                filtered_df = filtered_df.sort_values(by='ID')
+                
+                selected_company = st.selectbox("Select Company", filtered_df['Company Name'])
+                
+                # Prepare Table Data
+                display_cols = {
+                    'ID': 'ID',
+                    'Company Name': 'Company',
+                    'verified_revenue_text': 'Revenue',
+                    'Match Ratio': 'Ratio',
+                    'overlap_tech': 'Matched Tech',
+                    'missing_tech': 'Missing Tech'
                 }
-            )
-        else:
-            selected_company = None
-            st.info("No companies match these filters.")
+                
+                table_data = filtered_df[display_cols.keys()].rename(columns=display_cols)
+                
+                # CONFIGURABLE TABLE
+                st.dataframe(
+                    table_data,
+                    height=table_height, # Uses the sidebar setting
+                    use_container_width=True,
+                    hide_index=True,
+                    column_config={
+                        "ID": st.column_config.TextColumn("ID", width="small"),
+                        "Company": st.column_config.TextColumn("Company", width="medium"),
+                        "Revenue": st.column_config.TextColumn("Revenue", width="small"),
+                        "Ratio": st.column_config.TextColumn("Ratio", width="small"),
+                        "Matched Tech": st.column_config.ListColumn("Matched Tech", width="large"),
+                        "Missing Tech": st.column_config.ListColumn("Missing Tech", width="large"),
+                    }
+                )
+            else:
+                selected_company = None
+                st.info("No companies match these filters.")
 
-    with col2:
-        if selected_company:
-            st.markdown("---")
-            row = filtered_df[filtered_df['Company Name'] == selected_company].iloc[0]
+        with col2:
+            if selected_company:
+                st.markdown("---")
+                row = filtered_df[filtered_df['Company Name'] == selected_company].iloc[0]
+                
+                st.title(f"{row['ID']} - {row['Company Name']}")
+                st.caption(f"Revenue: {row['verified_revenue_text']} | Tech Match: {row['Match Ratio']}")
+                
+                st.markdown(row['content'])
+
+    with tab2:
+        st.subheader("Technology Stack Insights")
+        
+        # Prepare Data for Treemap
+        all_matched = [item for sublist in filtered_df['overlap_tech'] for item in sublist]
+        all_missing = [item for sublist in filtered_df['missing_tech'] for item in sublist]
+        
+        matched_counts = pd.Series(all_matched).value_counts().reset_index()
+        matched_counts.columns = ['Technology', 'Count']
+        matched_counts['Status'] = 'Matched'
+        
+        missing_counts = pd.Series(all_missing).value_counts().reset_index()
+        missing_counts.columns = ['Technology', 'Count']
+        missing_counts['Status'] = 'Missing'
+        
+        viz_df = pd.concat([matched_counts, missing_counts]).reset_index(drop=True)
+        
+        if not viz_df.empty:
+            # 2. Treemap (Plotly)
+            fig = px.treemap(
+                viz_df, 
+                path=['Status', 'Technology'], 
+                values='Count',
+                color='Status',
+                color_discrete_map={'Matched': '#2ecc71', 'Missing': '#e74c3c'},
+                hover_data=['Count']
+            )
             
-            st.title(f"{row['ID']} - {row['Company Name']}")
-            st.caption(f"Revenue: {row['verified_revenue_text']} | Tech Match: {row['Match Ratio']}")
-            
-            st.markdown(row['content'])
+            fig.update_layout(margin=dict(t=30, l=10, r=10, b=10))
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No technology data available for the current filters.")
+
 else:
     st.warning("No files found in 'analysis' folder.")
