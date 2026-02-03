@@ -131,7 +131,7 @@ if not df.empty:
                 display_cols = {
                     'ID': 'ID',
                     'Company Name': 'Company',
-                    'verified_revenue_text': 'Revenue',
+                    'verified_revenue_usd': 'Revenue ($M)',
                     'Match Ratio': 'Ratio',
                     'overlap_tech': 'Matched Tech',
                     'missing_tech': 'Missing Tech'
@@ -148,7 +148,7 @@ if not df.empty:
                     column_config={
                         "ID": st.column_config.TextColumn("ID", width="small"),
                         "Company": st.column_config.TextColumn("Company", width="medium"),
-                        "Revenue": st.column_config.TextColumn("Revenue", width="small"),
+                        "Revenue ($M)": st.column_config.NumberColumn("Revenue ($M)", format="$%d"),
                         "Ratio": st.column_config.TextColumn("Ratio", width="small"),
                         "Matched Tech": st.column_config.ListColumn("Matched Tech", width="large"),
                         "Missing Tech": st.column_config.ListColumn("Missing Tech", width="large"),
@@ -164,7 +164,7 @@ if not df.empty:
                 row = filtered_df[filtered_df['Company Name'] == selected_company].iloc[0]
                 
                 st.title(f"{row['ID']} - {row['Company Name']}")
-                st.caption(f"Revenue: {row['verified_revenue_text']} | Tech Match: {row['Match Ratio']}")
+                st.caption(f"Revenue: ${row['verified_revenue_usd']:,}M | Tech Match: {row['Match Ratio']}")
                 
                 st.markdown(row['content'])
 
