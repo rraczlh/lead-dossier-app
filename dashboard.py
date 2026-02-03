@@ -125,24 +125,16 @@ if not df.empty:
             if not filtered_df.empty:
                 filtered_df = filtered_df.sort_values(by='ID').reset_index(drop=True)
                 
-                # --- TRUNCATION LOGIC FOR TABLE ---
-                def truncate_tech(tech_list):
-                    if len(tech_list) > 10:
-                        return tech_list[:10] + [f"& {len(tech_list)-10} more..."]
-                    return tech_list
-
                 # Prepare Table Data
                 display_df = filtered_df.copy()
-                display_df['Matched Tech (Disp)'] = display_df['overlap_tech'].apply(truncate_tech)
-                display_df['Missing Tech (Disp)'] = display_df['missing_tech'].apply(truncate_tech)
 
                 display_cols = {
                     'ID': 'ID',
                     'Company Name': 'Company',
                     'verified_revenue_usd': 'Revenue ($M)',
                     'Match Ratio': 'Ratio',
-                    'Matched Tech (Disp)': 'Matched Tech',
-                    'Missing Tech (Disp)': 'Missing Tech'
+                    'overlap_tech': 'Matched Tech',
+                    'missing_tech': 'Missing Tech'
                 }
                 
                 table_data = display_df[display_cols.keys()].rename(columns=display_cols)
