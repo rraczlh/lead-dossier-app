@@ -67,15 +67,13 @@ if not df.empty:
     # --- SIDEBAR FILTERS ---
     st.sidebar.header("Filter Leads")
     
-    # --- LAYOUT SETTINGS ---
-    st.sidebar.markdown("---")
-    st.sidebar.caption("Layout Settings")
+    # --- SIDEBAR CONFIG ---
+    st.sidebar.title("Search & Filters")
     
-    # 1. Table Width Slider
-    layout_width = st.sidebar.slider("Table Width %", 30, 80, 60, 5) / 100
-    
-    # 2. Table Height Slider (New)
-    table_height = st.sidebar.slider("Table Height (px)", 200, 1000, 500, 50)
+    with st.sidebar.expander("UI Settings", expanded=False):
+        layout_width = st.slider("Explorer Width Ratio", 0.3, 0.8, 0.5)
+        table_height = st.slider("Table Height", 200, 1000, 500)
+        chart_height = st.slider("Chart Height", 400, 1500, 800)
     
     st.sidebar.markdown("---")
     
@@ -348,7 +346,7 @@ if not df.empty:
             )
             
             fig.update_layout(margin=dict(t=30, l=10, r=10, b=10))
-            st.plotly_chart(fig, width="stretch")
+            st.plotly_chart(fig, width="stretch", height=chart_height)
         else:
             st.info("No technology data available for the current filters.")
 
@@ -379,7 +377,7 @@ if not df.empty:
             )
             
             fig_silo.update_layout(margin=dict(t=30, l=10, r=10, b=10))
-            st.plotly_chart(fig_silo, width="stretch")
+            st.plotly_chart(fig_silo, width="stretch", height=chart_height)
             
             st.caption("This chart displays ONLY matched technologies aligned with our Capability Matrix silos.")
         else:
