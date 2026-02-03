@@ -391,6 +391,7 @@ if not df.empty:
         missing_counts['Status'] = 'Missing'
         
         viz_df = pd.concat([matched_counts, missing_counts]).reset_index(drop=True)
+        viz_df = viz_df.sort_values(by='Status') # Ensures 'Matched' (Ma) is before 'Missing' (Mi)
         
         if not viz_df.empty:
             # 2. Treemap (Plotly)
