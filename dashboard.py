@@ -197,12 +197,30 @@ if not df.empty:
                     }
                 )
 
-                # Determine Selected Row
+                # Initialize selection state if missing
+                if 'selected_company_id' not in st.session_state:
+                    st.session_state.selected_company_id = None
+
+                # Update selection from dataframe interaction
                 if selection.selection.rows:
                     selected_index = selection.selection.rows[0]
-                    selected_row = filtered_df.iloc[selected_index]
+                    # Get ID from the display_df (which is sorted and matches table_data order)
+                    st.session_state.selected_company_id = display_df.iloc[selected_index]['ID']
+
+                # Resolve selected_row from session_state ID
+                if st.session_state.selected_company_id:
+                    # Check if the ID still exists in the filtered results
+                    match = filtered_df[filtered_df['ID'] == st.session_state.selected_company_id]
+                    if not match.empty:
+                        selected_row = match.iloc[0]
+                    else:
+                        selected_row = None
+                        st.session_state.selected_company_id = None
                 else:
                     selected_row = None
+
+                # Display hint if nothing selected
+                if selected_row is None:
                     st.info("💡 Click a row above to view the dossier.")
             else:
                 selected_row = None
