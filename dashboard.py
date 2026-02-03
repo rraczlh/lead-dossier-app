@@ -189,14 +189,17 @@ if not df.empty:
                 with t_col1:
                     st.markdown("**✅ Matched Tech**")
                     if selected_row['overlap_tech']:
-                        st.write(" ".join([f"`{t}`" for t in selected_row['overlap_tech']]))
+                        # Use Streamlit's colored background formatting for a badge look
+                        badges = " ".join([f":green-background[{t}]" for t in selected_row['overlap_tech']])
+                        st.markdown(badges)
                     else:
                         st.caption("None matched")
                         
                 with t_col2:
                     st.markdown("**❌ Missing Tech**")
                     if selected_row['missing_tech']:
-                        st.write(" ".join([f"`{t}`" for t in selected_row['missing_tech']]))
+                        badges = " ".join([f":gray-background[{t}]" for t in selected_row['missing_tech']])
+                        st.markdown(badges)
                     else:
                         st.caption("None missing")
                 
