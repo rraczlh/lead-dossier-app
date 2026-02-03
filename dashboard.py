@@ -389,7 +389,7 @@ if not df.empty:
                 path=['Status', 'Technology'], 
                 values='Count',
                 color='Status',
-                color_discrete_map={'Matched': '#2ecc71', 'Missing': '#e74c3c'},
+                color_discrete_map={'Matched': '#2ecc71', 'Missing': '#95a5a6'},
                 hover_data=['Count']
             )
             
