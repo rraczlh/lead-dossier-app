@@ -172,8 +172,8 @@ if not df.empty:
                 if 'selected_company_id' not in st.session_state:
                     st.session_state.selected_company_id = None
                 
-                # Add Data-Driven Selection Indicator
-                display_df['Sel'] = display_df['ID'].apply(lambda x: "✅" if x == st.session_state.selected_company_id else "")
+                # Add Data-Driven Selection Indicator (Simple Arrow)
+                display_df['Sel'] = display_df['ID'].apply(lambda x: "➜" if x == st.session_state.selected_company_id else "")
 
                 display_cols = {
                     'Sel': '',
