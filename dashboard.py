@@ -79,21 +79,64 @@ if not df.empty:
     
     st.sidebar.markdown("---")
     
-    # --- REVENUE FILTER (Slider + Text Box) ---
+    # --- REVENUE FILTER (Synchronized Slider + Text Box) ---
     st.sidebar.subheader("Revenue (USD Millions)")
     
-    # Calculate Max Revenue for defaults
     max_rev_data = int(df['verified_revenue_usd'].max()) if not df.empty else 1000
+    abs_max = max_rev_data + 100
     
-    # A. The Slider (Quick Range)
-    slider_range = st.sidebar.slider("Quick Range", 0, max_rev_data + 100, (0, max_rev_data + 100), format="$%dM")
+    # Initialize session state for revenue
+    if 'rev_range' not in st.session_state:
+        st.session_state.rev_range = (0, abs_max)
+    if 'min_rev' not in st.session_state:
+        st.session_state.min_rev = 0
+    if 'max_rev' not in st.session_state:
+        st.session_state.max_rev = abs_max
+
+    # 1. Helper to sync from Slider to Number Inputs
+    def sync_from_slider():
+        st.session_state.min_rev = st.session_state.rev_slider[0]
+        st.session_state.max_rev = st.session_state.rev_slider[1]
+
+    # 2. Helper to sync from Number Inputs to Slider
+    def sync_from_inputs():
+        # Ensure min doesn't exceed max
+        if st.session_state.min_rev > st.session_state.max_rev:
+            st.session_state.min_rev = st.session_state.max_rev
+        st.session_state.rev_range = (st.session_state.min_rev, st.session_state.max_rev)
+
+    # A. The Slider
+    slider_range = st.sidebar.slider(
+        "Quick Range", 
+        0, abs_max, 
+        key="rev_slider",
+        on_change=sync_from_slider,
+        value=st.session_state.rev_range,
+        format="$%dM"
+    )
     
     # B. The Text Boxes (Precise Input)
     rc1, rc2 = st.sidebar.columns(2)
     with rc1:
-        min_rev_input = st.number_input("Min ($M)", min_value=0, value=slider_range[0])
+        min_rev_input = st.sidebar.number_input(
+            "Min ($M)", 
+            min_value=0, 
+            max_value=abs_max,
+            key="min_rev",
+            on_change=sync_from_inputs
+        )
     with rc2:
-        max_rev_input = st.number_input("Max ($M)", min_value=0, value=slider_range[1])
+        max_rev_input = st.sidebar.number_input(
+            "Max ($M)", 
+            min_value=0, 
+            max_value=abs_max,
+            key="max_rev",
+            on_change=sync_from_inputs
+        )
+
+    # FINAL AUTHORITY: Always use the session state values which are now kept in sync
+    min_rev_final = st.session_state.min_rev
+    max_rev_final = st.session_state.max_rev
 
     # --- OTHER FILTERS ---
     all_techs = sorted(list(set([item for sublist in df['overlap_tech'] for item in sublist])))
@@ -102,18 +145,17 @@ if not df.empty:
     min_score = st.sidebar.slider("Min. Overlap Count", 0, 20, 0)
     
     # --- APPLY FILTERS ---
-    # Logic: We use the Text Inputs as the final authority (since they default to the slider anyway)
     filtered_df = df[
         (df['overlap_count'] >= min_score) & 
-        (df['verified_revenue_usd'] >= min_rev_input) & 
-        (df['verified_revenue_usd'] <= max_rev_input)
+        (df['verified_revenue_usd'] >= min_rev_final) & 
+        (df['verified_revenue_usd'] <= max_rev_final)
     ]
     
     if selected_tech:
         filtered_df = filtered_df[filtered_df['overlap_tech'].apply(lambda x: any(item in selected_tech for item in x))]
 
     # --- MAIN TABS ---
-    tab1, tab2 = st.tabs(["Lead Explorer", "Tech Insights"])
+    tab1, tab2, tab3 = st.tabs(["Lead Explorer", "Tech Insights", "Capability Alignment"])
 
     with tab1:
         # --- MAIN VIEW ---
@@ -198,6 +240,85 @@ if not df.empty:
                 st.markdown("---")
                 st.markdown(selected_row['content'])
 
+    # --- TAB 2 AND TAB 3 DATA PREP ---
+    CAPABILITY_MATRIX = {
+        "Python": ("Programming Languages", "Core"),
+        "Java": ("Programming Languages", "Core"),
+        "C#": ("Programming Languages", "Core"),
+        "JavaScript": ("Programming Languages", "Core"),
+        "TypeScript": ("Programming Languages", "Core"),
+        "Swift": ("Programming Languages", "Core"),
+        "Kotlin": ("Programming Languages", "Core"),
+        "Go": ("Programming Languages", "Core"),
+        "Ruby": ("Programming Languages", "Core"),
+        "Scala": ("Programming Languages", "Core"),
+        "PHP": ("Programming Languages", "Core"),
+        "Power Fx": ("Programming Languages", "Core"),
+        
+        "AWS": ("Cloud & DevOps", "Providers"),
+        "Azure": ("Cloud & DevOps", "Providers"),
+        "Firebase": ("Cloud & DevOps", "Providers"),
+        "Salesforce": ("Cloud & DevOps", "Providers"),
+        
+        "Kubernetes": ("Cloud & DevOps", "Infrastructure"),
+        "CDK": ("Cloud & DevOps", "Infrastructure"),
+        "Bicep": ("Cloud & DevOps", "Infrastructure"),
+        "CloudFormation": ("Cloud & DevOps", "Infrastructure"),
+        "Docker": ("Cloud & DevOps", "Infrastructure"),
+        
+        "GitHub Actions": ("Cloud & DevOps", "CI/CD"),
+        "Azure DevOps": ("Cloud & DevOps", "CI/CD"),
+        "Git": ("Cloud & DevOps", "CI/CD"),
+        "Airflow": ("Cloud & DevOps", "CI/CD"),
+        
+        "Grafana": ("Observability & ITSM", "Monitoring"),
+        "Prometheus": ("Observability & ITSM", "Monitoring"),
+        "AppDynamics": ("Observability & ITSM", "Monitoring"),
+        "ThousandEyes": ("Observability & ITSM", "Monitoring"),
+        "CloudWatch": ("Observability & ITSM", "Monitoring"),
+        
+        "ServiceNow": ("Observability & ITSM", "Incident Management"),
+        "BigPanda": ("Observability & ITSM", "Incident Management"),
+        
+        ".NET Core": ("Application Dev", "Backend"),
+        "Node.js": ("Application Dev", "Backend"),
+        "FastAPI": ("Application Dev", "Backend"),
+        "Rails": ("Application Dev", "Backend"),
+        "Spring": ("Application Dev", "Backend"),
+        "RabbitMQ": ("Application Dev", "Backend"),
+        
+        "React": ("Application Dev", "Frontend"),
+        "Next.js": ("Application Dev", "Frontend"),
+        "Angular": ("Application Dev", "Frontend"),
+        "Tailwind": ("Application Dev", "Frontend"),
+        "Redux": ("Application Dev", "Frontend"),
+        
+        "React Native": ("Application Dev", "Mobile"),
+        "Flutter": ("Application Dev", "Mobile"),
+        "SwiftUI": ("Application Dev", "Mobile"),
+        "Jetpack Compose": ("Application Dev", "Mobile"),
+        
+        "Pandas": ("Data Science & ML", "Core"),
+        "Numpy": ("Data Science & ML", "Core"),
+        "Polars": ("Data Science & ML", "Core"),
+        "Scikit-learn": ("Data Science & ML", "Core"),
+        "PyTorch": ("Data Science & ML", "Core"),
+        "TensorFlow": ("Data Science & ML", "Core"),
+        
+        "Langchain": ("Data Science & ML", "Generative AI"),
+        "OpenAI": ("Data Science & ML", "Generative AI"),
+        "ChromaDB": ("Data Science & ML", "Generative AI"),
+        "Langfuse": ("Data Science & ML", "Generative AI"),
+        
+        "Postgres": ("Databases", "Relational"),
+        "MySQL": ("Databases", "Relational"),
+        "SQL Server": ("Databases", "Relational"),
+        "Oracle": ("Databases", "Relational"),
+        "DynamoDB": ("Databases", "NoSQL"),
+        "Redis": ("Databases", "NoSQL"),
+        "Snowflake": ("Databases", "Data Warehouse")
+    }
+
     with tab2:
         st.subheader("Technology Stack Insights")
         
@@ -230,6 +351,39 @@ if not df.empty:
             st.plotly_chart(fig, width="stretch")
         else:
             st.info("No technology data available for the current filters.")
+
+    with tab3:
+        st.subheader("Capability Alignment (Localhost Matrix)")
+        
+        # Expand overlap_tech into rows with Silo and Category
+        silo_data = []
+        for tech_list in filtered_df['overlap_tech']:
+            for tech in tech_list:
+                if tech in CAPABILITY_MATRIX:
+                    silo, category = CAPABILITY_MATRIX[tech]
+                    silo_data.append({'Silo': silo, 'Category': category, 'Technology': tech})
+        
+        silo_df = pd.DataFrame(silo_data)
+        
+        if not silo_df.empty:
+            # Count occurrences per Tech/Category/Silo
+            silo_viz = silo_df.groupby(['Silo', 'Category', 'Technology']).size().reset_index(name='Count')
+            
+            fig_silo = px.treemap(
+                silo_viz,
+                path=['Silo', 'Category', 'Technology'],
+                values='Count',
+                color='Silo',
+                color_discrete_sequence=px.colors.qualitative.Alphabet,
+                hover_data=['Count']
+            )
+            
+            fig_silo.update_layout(margin=dict(t=30, l=10, r=10, b=10))
+            st.plotly_chart(fig_silo, width="stretch")
+            
+            st.caption("This chart displays ONLY matched technologies aligned with our Capability Matrix silos.")
+        else:
+            st.info("No alignment found. Filter for companies with matches in our Capability Matrix.")
 
 else:
     st.warning("No files found in 'analysis' folder.")
