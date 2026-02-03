@@ -242,11 +242,11 @@ if not df.empty:
             if selected_row is not None:
                 st.markdown("---")
                 
-                st.title(f"{selected_row['ID']} - {selected_row['Company Name']}")
+                st.header(f"{selected_row['ID']} - {selected_row['Company Name']}")
                 st.caption(f"Revenue: ${selected_row['verified_revenue_usd']:,}M | Tech Match: {selected_row['Match Ratio']}")
                 
                 # --- TECH SUMMARY BADGES ---
-                st.markdown("### Tech Landscape")
+                st.markdown("#### Tech Landscape")
                 t_col1, t_col2 = st.columns(2)
                 with t_col1:
                     st.markdown("**✅ Matched Tech**")
@@ -266,7 +266,25 @@ if not df.empty:
                         st.caption("None missing")
                 
                 st.markdown("---")
-                st.markdown(selected_row['content'])
+                
+                # --- HIDE YAML DATA ---
+                full_content = selected_row['content']
+                if "```yaml" in full_content and "```" in full_content.split("```yaml", 1)[1]:
+                    parts = full_content.split("```yaml", 1)
+                    before_yaml = parts[0]
+                    rest = parts[1].split("```", 1)
+                    yaml_block = "```yaml" + rest[0] + "```"
+                    after_yaml = rest[1]
+                    
+                    if before_yaml.strip():
+                        st.markdown(before_yaml)
+                    
+                    with st.expander("📄 View Batch Metadata", expanded=False):
+                        st.markdown(yaml_block)
+                        
+                    st.markdown(after_yaml)
+                else:
+                    st.markdown(full_content)
 
     # --- TAB 2 AND TAB 3 DATA PREP ---
     CAPABILITY_MATRIX = {
