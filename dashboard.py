@@ -167,8 +167,16 @@ if not df.empty:
                 
                 # Prepare Table Data
                 display_df = filtered_df.copy()
+                
+                # Bi-directional ID persistence (ensure state exists for the lambda below)
+                if 'selected_company_id' not in st.session_state:
+                    st.session_state.selected_company_id = None
+                
+                # Add Data-Driven Selection Indicator
+                display_df['Sel'] = display_df['ID'].apply(lambda x: "✅" if x == st.session_state.selected_company_id else "")
 
                 display_cols = {
+                    'Sel': '',
                     'ID': 'ID',
                     'Company Name': 'Company',
                     'verified_revenue_usd': 'Revenue ($M)',
@@ -187,8 +195,9 @@ if not df.empty:
                     hide_index=True,
                     on_select="rerun",
                     selection_mode="single-row",
-                    key="lead_table",  # Adding a key helps Streamlit persist widget state
+                    key="lead_table",
                     column_config={
+                        "": st.column_config.TextColumn("", width="small"),
                         "ID": st.column_config.TextColumn("ID", width="small"),
                         "Company": st.column_config.TextColumn("Company", width="medium"),
                         "Revenue ($M)": st.column_config.NumberColumn("Revenue ($M)", format="$%d"),
@@ -198,15 +207,13 @@ if not df.empty:
                     }
                 )
 
-                # Initialize selection state if missing
-                if 'selected_company_id' not in st.session_state:
-                    st.session_state.selected_company_id = None
-
                 # Update selection from dataframe interaction
                 # selection.selection.rows is populated ONLY on the rerun triggered by a click
                 if selection.selection.rows:
                     selected_index = selection.selection.rows[0]
                     st.session_state.selected_company_id = display_df.iloc[selected_index]['ID']
+                    # Rerun once more to update the ✅ indicator immediately after click
+                    st.rerun()
                 elif 'lead_table' in st.session_state and st.session_state.lead_table.selection.rows:
                     # Fallback to key-based session state if available
                     selected_index = st.session_state.lead_table.selection.rows[0]
