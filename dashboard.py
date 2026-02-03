@@ -401,9 +401,11 @@ if not df.empty:
                 values='Count',
                 color='Status',
                 color_discrete_map={'Matched': '#2ecc71', 'Missing': '#95a5a6'},
-                hover_data=['Count'],
-                category_orders={"Status": ["Matched", "Missing"]}
+                hover_data=['Count']
             )
+            
+            # Prevent Plotly from re-sorting by value, preserving our 'Status' sort
+            fig.update_traces(sort=False)
             
             fig.update_layout(margin=dict(t=30, l=10, r=10, b=10))
             st.plotly_chart(fig, width="stretch", height=chart_height)
