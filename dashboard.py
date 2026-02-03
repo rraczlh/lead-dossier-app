@@ -154,7 +154,7 @@ if not df.empty:
                     width="stretch",
                     hide_index=True,
                     on_select="rerun",
-                    selection_mode="single_row",
+                    selection_mode="single-row",
                     column_config={
                         "ID": st.column_config.TextColumn("ID", width="small"),
                         "Company": st.column_config.TextColumn("Company", width="medium"),
