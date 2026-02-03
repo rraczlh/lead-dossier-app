@@ -401,7 +401,8 @@ if not df.empty:
                 values='Count',
                 color='Status',
                 color_discrete_map={'Matched': '#2ecc71', 'Missing': '#95a5a6'},
-                hover_data=['Count']
+                hover_data=['Count'],
+                category_orders={"Status": ["Matched", "Missing"]}
             )
             
             fig.update_layout(margin=dict(t=30, l=10, r=10, b=10))
