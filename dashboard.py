@@ -187,6 +187,7 @@ if not df.empty:
                     hide_index=True,
                     on_select="rerun",
                     selection_mode="single-row",
+                    key="lead_table",  # Adding a key helps Streamlit persist widget state
                     column_config={
                         "ID": st.column_config.TextColumn("ID", width="small"),
                         "Company": st.column_config.TextColumn("Company", width="medium"),
@@ -202,9 +203,13 @@ if not df.empty:
                     st.session_state.selected_company_id = None
 
                 # Update selection from dataframe interaction
+                # selection.selection.rows is populated ONLY on the rerun triggered by a click
                 if selection.selection.rows:
                     selected_index = selection.selection.rows[0]
-                    # Get ID from the display_df (which is sorted and matches table_data order)
+                    st.session_state.selected_company_id = display_df.iloc[selected_index]['ID']
+                elif 'lead_table' in st.session_state and st.session_state.lead_table.selection.rows:
+                    # Fallback to key-based session state if available
+                    selected_index = st.session_state.lead_table.selection.rows[0]
                     st.session_state.selected_company_id = display_df.iloc[selected_index]['ID']
 
                 # Resolve selected_row from session_state ID
