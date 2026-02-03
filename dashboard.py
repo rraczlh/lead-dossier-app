@@ -123,28 +123,38 @@ if not df.empty:
             st.subheader(f"Matches Found: {len(filtered_df)}")
             
             if not filtered_df.empty:
-                filtered_df = filtered_df.sort_values(by='ID')
+                filtered_df = filtered_df.sort_values(by='ID').reset_index(drop=True)
                 
-                selected_company = st.selectbox("Select Company", filtered_df['Company Name'])
-                
+                # --- TRUNCATION LOGIC FOR TABLE ---
+                def truncate_tech(tech_list):
+                    if len(tech_list) > 10:
+                        return tech_list[:10] + [f"& {len(tech_list)-10} more..."]
+                    return tech_list
+
                 # Prepare Table Data
+                display_df = filtered_df.copy()
+                display_df['Matched Tech (Disp)'] = display_df['overlap_tech'].apply(truncate_tech)
+                display_df['Missing Tech (Disp)'] = display_df['missing_tech'].apply(truncate_tech)
+
                 display_cols = {
                     'ID': 'ID',
                     'Company Name': 'Company',
                     'verified_revenue_usd': 'Revenue ($M)',
                     'Match Ratio': 'Ratio',
-                    'overlap_tech': 'Matched Tech',
-                    'missing_tech': 'Missing Tech'
+                    'Matched Tech (Disp)': 'Matched Tech',
+                    'Missing Tech (Disp)': 'Missing Tech'
                 }
                 
-                table_data = filtered_df[display_cols.keys()].rename(columns=display_cols)
+                table_data = display_df[display_cols.keys()].rename(columns=display_cols)
                 
-                # CONFIGURABLE TABLE
-                st.dataframe(
+                # CONFIGURABLE TABLE WITH SELECTION
+                selection = st.dataframe(
                     table_data,
-                    height=table_height, # Uses the sidebar setting
-                    use_container_width=True,
+                    height=table_height,
+                    width="stretch",
                     hide_index=True,
+                    on_select="rerun",
+                    selection_mode="single_row",
                     column_config={
                         "ID": st.column_config.TextColumn("ID", width="small"),
                         "Company": st.column_config.TextColumn("Company", width="medium"),
@@ -154,19 +164,44 @@ if not df.empty:
                         "Missing Tech": st.column_config.ListColumn("Missing Tech", width="large"),
                     }
                 )
+
+                # Determine Selected Row
+                if selection.selection.rows:
+                    selected_index = selection.selection.rows[0]
+                    selected_row = filtered_df.iloc[selected_index]
+                else:
+                    selected_row = None
+                    st.info("💡 Click a row above to view the dossier.")
             else:
-                selected_company = None
+                selected_row = None
                 st.info("No companies match these filters.")
 
         with col2:
-            if selected_company:
+            if selected_row is not None:
                 st.markdown("---")
-                row = filtered_df[filtered_df['Company Name'] == selected_company].iloc[0]
                 
-                st.title(f"{row['ID']} - {row['Company Name']}")
-                st.caption(f"Revenue: ${row['verified_revenue_usd']:,}M | Tech Match: {row['Match Ratio']}")
+                st.title(f"{selected_row['ID']} - {selected_row['Company Name']}")
+                st.caption(f"Revenue: ${selected_row['verified_revenue_usd']:,}M | Tech Match: {selected_row['Match Ratio']}")
                 
-                st.markdown(row['content'])
+                # --- TECH SUMMARY BADGES ---
+                st.markdown("### Tech Landscape")
+                t_col1, t_col2 = st.columns(2)
+                with t_col1:
+                    st.markdown("**✅ Matched Tech**")
+                    if selected_row['overlap_tech']:
+                        st.write(" ".join([f"`{t}`" for t in selected_row['overlap_tech']]))
+                    else:
+                        st.caption("None matched")
+                        
+                with t_col2:
+                    st.markdown("**❌ Missing Tech**")
+                    if selected_row['missing_tech']:
+                        st.write(" ".join([f"`{t}`" for t in selected_row['missing_tech']]))
+                    else:
+                        st.caption("None missing")
+                
+                st.markdown("---")
+                st.markdown(selected_row['content'])
 
     with tab2:
         st.subheader("Technology Stack Insights")
@@ -197,7 +232,7 @@ if not df.empty:
             )
             
             fig.update_layout(margin=dict(t=30, l=10, r=10, b=10))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
         else:
             st.info("No technology data available for the current filters.")
 
