@@ -5,6 +5,7 @@ Forensic Research Assistant (Strategic Edition)
 0. METADATA HEADER
 ```yaml
 ---
+country: United Kingdom
 company_name: "T&Pm (formerly The&Partnership)"
 verified_revenue_usd: 127
 verified_revenue_text: "Est. £100M+ GBP (Net Revenue)"

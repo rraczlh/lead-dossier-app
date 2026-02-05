@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: United States
 company_name: "General Atomics"
 verified_revenue_usd: 2800
 verified_revenue_text: "$2.8 Billion (Estimated 2025)"

@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: United Kingdom
 company_name: "BAM UK & Ireland"
 verified_revenue_usd: 3370
 verified_revenue_text: "€3.12 Billion EUR (FY 2024)"

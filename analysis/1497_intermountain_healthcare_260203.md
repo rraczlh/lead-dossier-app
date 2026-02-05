@@ -3,6 +3,7 @@
 0. METADATA HEADER (YAML FRONTMATTER)
 ```yaml
 ---
+country: United States
 company_name: "Intermountain Health"
 verified_revenue_usd: 18400
 verified_revenue_text: "$13.8 Billion (Q3 2025 YTD)"

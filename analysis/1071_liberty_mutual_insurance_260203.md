@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: United States
 company_name: "Liberty Mutual Insurance"
 verified_revenue_usd: 50218
 verified_revenue_text: "$50.2 Billion USD (2024 FY)"

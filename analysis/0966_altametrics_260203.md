@@ -3,6 +3,7 @@
 0. METADATA HEADER (YAML FRONTMATTER)
 ```yaml
 ---
+country: United States
 company_name: "Altametrics"
 verified_revenue_usd: 32
 verified_revenue_text: "$32M (Est. 2025)"

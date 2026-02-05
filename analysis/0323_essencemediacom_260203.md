@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: United Kingdom
 company_name: "EssenceMediacom"
 verified_revenue_usd: 2500
 verified_revenue_text: "$24.5B (Billings - COMvergence 2024/25)"

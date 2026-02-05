@@ -3,6 +3,7 @@
 0. METADATA HEADER (YAML FRONTMATTER)
 ```yaml
 ---
+country: United Kingdom
 company_name: "Dorling Kindersley"
 verified_revenue_usd: 250
 verified_revenue_text: "$250 Million USD"

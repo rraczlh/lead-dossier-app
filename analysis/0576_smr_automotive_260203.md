@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: Germany
 company_name: "SMR Automotive (Samvardhana Motherson Reflectec)"
 verified_revenue_usd: 1650
 verified_revenue_text: "€1.5 Billion EUR (Est. SMR Division)"

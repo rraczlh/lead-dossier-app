@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: United Kingdom
 company_name: "BBH (Bartle Bogle Hegarty)"
 verified_revenue_usd: 125
 verified_revenue_text: "Est. £100M GBP (~$125M USD)"

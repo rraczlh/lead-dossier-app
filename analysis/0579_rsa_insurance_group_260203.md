@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: United Kingdom
 company_name: "RSA Insurance Group (UK&I)"
 verified_revenue_usd: 5000
 verified_revenue_text: "£3,987m GBP (Net Written Premiums, 2024)"

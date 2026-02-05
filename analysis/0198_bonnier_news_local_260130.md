@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: Sweden
 company_name: "Bonnier News Local"
 verified_revenue_usd: 944
 verified_revenue_text: "10.2 Billion SEK"

@@ -4,6 +4,7 @@ Forensic Research Assistant (Strategic Edition)
 
 ```yaml
 ---
+country: Germany
 company_name: "Commerz Real KVG"
 verified_revenue_usd: 510
 verified_revenue_text: "~€468M EUR (Est. Revenue) / €35.5B AUM"

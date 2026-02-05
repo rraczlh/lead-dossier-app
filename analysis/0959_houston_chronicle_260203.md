@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: United States
 company_name: "Houston Chronicle"
 verified_revenue_usd: 150
 verified_revenue_text: "$150M (Estimated/Subsidiary)"

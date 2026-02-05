@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: United Kingdom
 company_name: "New England Seafood International"
 verified_revenue_usd: 205
 verified_revenue_text: "£161.1 Million GBP"

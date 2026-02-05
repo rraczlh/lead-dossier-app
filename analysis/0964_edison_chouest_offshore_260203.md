@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: United States
 company_name: "Edison Chouest Offshore"
 verified_revenue_usd: 1200
 verified_revenue_text: "$1.2 Billion (Estimated)"

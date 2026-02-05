@@ -3,6 +3,7 @@
 0. METADATA HEADER (YAML FRONTMATTER)
 ```yaml
 ---
+country: Germany
 company_name: "EMIS Electrics GmbH (EMIS Group)"
 verified_revenue_usd: 108
 verified_revenue_text: "~100M EUR (Group Est. post-divestiture)"

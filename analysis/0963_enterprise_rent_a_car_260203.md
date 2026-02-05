@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: United States
 company_name: "Enterprise Mobility"
 verified_revenue_usd: 39000
 verified_revenue_text: "$39 Billion USD"

@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: Germany
 company_name: "Onlineprinters GmbH"
 verified_revenue_usd: 309
 verified_revenue_text: "€285.7M EUR (LTM Q3 2025)"

@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: Switzerland
 company_name: "Die Mobiliar (Schweizerische Mobiliar)"
 verified_revenue_usd: 5536
 verified_revenue_text: "CHF 4.943 Billion (Premium Volume 2024)"

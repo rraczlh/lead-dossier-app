@@ -3,6 +3,7 @@
 0. METADATA HEADER (YAML FRONTMATTER)
 ```yaml
 ---
+country: Germany
 company_name: "meinestadt.de"
 verified_revenue_usd: 32
 verified_revenue_text: "~€30M EUR (Est. based on 2024 financials)"

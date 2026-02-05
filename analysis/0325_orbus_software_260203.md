@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: United Kingdom
 company_name: "Orbus Software"
 verified_revenue_usd: 50
 verified_revenue_text: "$50M+ ARR (Verified 2024)"

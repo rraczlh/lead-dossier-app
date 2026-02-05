@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: Switzerland
 company_name: "GMS (Global Message Services) AG"
 verified_revenue_usd: 50
 verified_revenue_text: "$50 Million (Estimated)"

@@ -3,6 +3,7 @@
 0. METADATA HEADER (YAML FRONTMATTER)
 ```yaml
 ---
+country: Japan/Global
 company_name: "Canon Medical Systems"
 verified_revenue_usd: 3800
 verified_revenue_text: "¥568.8 Billion JPY (~$3.8 Billion USD)"

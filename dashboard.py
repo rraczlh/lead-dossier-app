@@ -121,7 +121,7 @@ def load_dossiers():
     df = pd.DataFrame(data)
     
     # --- SAFETY FIX ---
-    required_cols = ['company_name', 'verified_revenue_usd', 'verified_revenue_text', 'detected_tech', 'overlap_tech']
+    required_cols = ['company_name', 'verified_revenue_usd', 'verified_revenue_text', 'detected_tech', 'overlap_tech', 'country']
     for col in required_cols:
         if col not in df.columns:
             df[col] = None 
@@ -143,6 +143,7 @@ def load_dossiers():
     df['verified_revenue_usd'] = pd.to_numeric(df['verified_revenue_usd'], errors='coerce').fillna(0).astype(int)
     df['Company Name'] = df.apply(lambda x: x['company_name'] if pd.notna(x['company_name']) else x['filename'], axis=1)
     df['Match Ratio'] = df.apply(lambda x: f"{x['overlap_count']} / {x['total_count']}", axis=1)
+    df['Country'] = df['country'].fillna('Unknown') 
 
     return df
 
@@ -226,6 +227,10 @@ if not df.empty:
     all_techs = sorted(list(set([item for sublist in df['overlap_tech'] for item in sublist])))
     selected_tech = st.sidebar.multiselect("Tech Stack Match", all_techs)
     
+    # Country Filter
+    all_countries = sorted(list(set(df['Country'].unique())))
+    selected_country = st.sidebar.multiselect("Country", all_countries)
+
     min_score = st.sidebar.slider("Min. Overlap Count", 0, 20, 0)
     
     # --- APPLY FILTERS ---
@@ -237,6 +242,9 @@ if not df.empty:
     
     if selected_tech:
         filtered_df = filtered_df[filtered_df['overlap_tech'].apply(lambda x: any(item in selected_tech for item in x))]
+        
+    if selected_country:
+        filtered_df = filtered_df[filtered_df['Country'].isin(selected_country)]
 
     # --- MAIN TABS ---
     tab1, tab2, tab3 = st.tabs(["Lead Explorer", "Tech Insights", "Capability Alignment"])
@@ -264,6 +272,7 @@ if not df.empty:
                 display_cols = {
                     'Sel': '',
                     'ID': 'ID',
+                    'Country': 'Location',
                     'Company Name': 'Company',
                     'verified_revenue_usd': 'Revenue ($M)',
                     'Match Ratio': 'Ratio',
@@ -285,6 +294,7 @@ if not df.empty:
                     column_config={
                         "": st.column_config.TextColumn("", width="small"),
                         "ID": st.column_config.TextColumn("ID", width="small"),
+                        "Location": st.column_config.TextColumn("Country", width="medium"),
                         "Company": st.column_config.TextColumn("Company", width="medium"),
                         "Revenue ($M)": st.column_config.NumberColumn("Revenue ($M)", format="$%d"),
                         "Ratio": st.column_config.TextColumn("Ratio", width="small"),

@@ -3,6 +3,7 @@
 0. METADATA HEADER (YAML FRONTMATTER)
 ```yaml
 ---
+country: Netherlands
 company_name: "Prodrive Technologies"
 verified_revenue_usd: 596
 verified_revenue_text: "€552 Million EUR (2024)"

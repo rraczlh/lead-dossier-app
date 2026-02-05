@@ -3,6 +3,7 @@
 0. METADATA HEADER (YAML FRONTMATTER)
 ```yaml
 ---
+country: Slovakia
 company_name: "UNIQA Group Service Center Slovakia (UNIQA GSC)"
 verified_revenue_usd: 30
 verified_revenue_text: "€30 Million (Est. Subsidiary Revenue)"

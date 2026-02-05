@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: United Kingdom
 company_name: "Expandi Group"
 verified_revenue_usd: 60
 verified_revenue_text: "$60M (Estimated)"

@@ -3,6 +3,7 @@
 0. METADATA HEADER (YAML FRONTMATTER)
 ```yaml
 ---
+country: Germany
 company_name: "Sana Kliniken AG"
 verified_revenue_usd: 3900
 verified_revenue_text: "€3.6 Billion"

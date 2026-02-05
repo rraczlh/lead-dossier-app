@@ -3,6 +3,7 @@
 0. METADATA HEADER (YAML FRONTMATTER)
 ```yaml
 ---
+country: United Kingdom
 company_name: "ElectraLink"
 verified_revenue_usd: 24
 verified_revenue_text: "£18.3M GBP (2023)"

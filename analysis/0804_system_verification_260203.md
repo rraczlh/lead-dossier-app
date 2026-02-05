@@ -3,6 +3,7 @@
 0. METADATA HEADER (YAML FRONTMATTER)
 ```yaml
 ---
+country: Sweden
 company_name: "EcoFlow"
 verified_revenue_usd: 950
 verified_revenue_text: "Nears $1B USD"

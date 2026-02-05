@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: United Kingdom
 company_name: "Barclays Corporate"
 verified_revenue_usd: 37910
 verified_revenue_text: "$37.91 Billion (TTM Sep 2025)"

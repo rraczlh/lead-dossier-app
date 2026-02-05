@@ -2,6 +2,7 @@
 
 ```yaml
 ---
+country: United States
 company_name: "Arcadium Lithium (now Rio Tinto Lithium)"
 verified_revenue_usd: 1000
 verified_revenue_text: "$1.0B USD (TTM prior to Mar 2025 Acquisition)"
