@@ -5,8 +5,14 @@ import pandas as pd
 import os
 import plotly.express as px
 
+
 # 1. Setup Page
 st.set_page_config(layout="wide", page_title="Localhost Lead Intelligence")
+
+# --- PATH CORRECTION ---
+# Ensure we are running from the script's directory for consistent relative paths
+script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
 
 # 2. Capability Matrix definition
 CAPABILITY_MATRIX = {
@@ -91,9 +97,25 @@ CAPABILITY_MATRIX = {
 @st.cache_data
 def load_dossiers():
     data = []
-    files = glob.glob("analysis/*.md") 
+    
+    # Robust path check
+    analysis_dir = os.path.join(os.getcwd(), "analysis")
+    
+    if not os.path.exists(analysis_dir):
+        st.error(f"❌ Analysis directory not found at: {analysis_dir}")
+        st.write(f"Current Working Directory: {os.getcwd()}")
+        st.write(f"Files in CWD: {os.listdir(os.getcwd())}")
+        return pd.DataFrame()
+
+    files = glob.glob(os.path.join(analysis_dir, "*.md"))
     
     if not files:
+        st.warning("⚠️ No Markdown files found in 'analysis' directory.")
+        st.write(f"Looking in: {analysis_dir}")
+        try:
+            st.write(f"Files found: {os.listdir(analysis_dir)}")
+        except Exception as e:
+            st.error(f"Could not list directory: {e}")
         return pd.DataFrame()
 
     for file in files:
