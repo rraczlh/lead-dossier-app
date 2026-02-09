@@ -288,11 +288,7 @@ if not df.empty:
                 if 'selected_company_id' not in st.session_state:
                     st.session_state.selected_company_id = None
                 
-                # Add Data-Driven Selection Indicator (Simple Arrow)
-                display_df['Sel'] = display_df['ID'].apply(lambda x: "➜" if x == st.session_state.selected_company_id else "")
-
                 display_cols = {
-                    'Sel': '',
                     'ID': 'ID',
                     'Country': 'Location',
                     'Company Name': 'Company',
@@ -314,7 +310,6 @@ if not df.empty:
                     selection_mode="single-row",
                     key="lead_table",
                     column_config={
-                        "": st.column_config.TextColumn("", width="small"),
                         "ID": st.column_config.TextColumn("ID", width="small"),
                         "Location": st.column_config.TextColumn("Country", width="medium"),
                         "Company": st.column_config.TextColumn("Company", width="medium"),
@@ -330,12 +325,12 @@ if not df.empty:
                 if selection.selection.rows:
                     selected_index = selection.selection.rows[0]
                     st.session_state.selected_company_id = display_df.iloc[selected_index]['ID']
-                    # Rerun once more to update the ✅ indicator immediately after click
-                    st.rerun()
                 elif 'lead_table' in st.session_state and st.session_state.lead_table.selection.rows:
                     # Fallback to key-based session state if available
                     selected_index = st.session_state.lead_table.selection.rows[0]
                     st.session_state.selected_company_id = display_df.iloc[selected_index]['ID']
+                else:
+                    st.session_state.selected_company_id = None
 
                 # Resolve selected_row from session_state ID
                 if st.session_state.selected_company_id:
