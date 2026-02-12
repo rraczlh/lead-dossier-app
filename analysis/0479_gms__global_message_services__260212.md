@@ -1,6 +1,6 @@
 **Generated via BATCH on:** 2026-02-12 13:18:28.400936
 
-0. METADATA HEADER (YAML FRONTMATTER)
+```yaml
 ---
 country: "Switzerland"
 company_name: "GMS (Global Message Services)"
@@ -11,6 +11,7 @@ detected_tech: ["Java", "Spring Boot", "MongoDB", "Oracle Database", "REST API",
 overlap_tech: ["Java", "Spring Boot", "MongoDB", "Oracle Database", "REST API", "Generative AI", "Python", "HTML/CSS"]
 primary_signals: ["Strategic pivot to AI-driven communications (Feb 2024)", "Launch of Enterprise AI Chatbots", "Hiring for Network API and Security roles"]
 ---
+```
 
 1. DATA VALIDATION (Excel vs. Current 2026)
 

@@ -1,5 +1,6 @@
 **Generated via BATCH on:** 2026-02-12 13:18:22.104709
 
+```yaml
 ---
 country: "United States"
 company_name: "Arcadium Lithium (now Rio Tinto Lithium)"
@@ -10,6 +11,7 @@ detected_tech: ["SAP S/4HANA", "Microsoft 365", "Azure", "Power BI", "Python", "
 overlap_tech: ["Azure", "Power BI", "Python", "AWS IoT Core"]
 primary_signals: ["Acquisition by Rio Tinto ($6.7B)", "SAP S/4HANA Cloud Migration", "Capacity Doubling in Argentina"]
 ---
+```
 
 ### 1. DATA VALIDATION (Excel vs. Current 2026)
 

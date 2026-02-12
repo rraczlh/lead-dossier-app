@@ -1,6 +1,6 @@
 **Generated via BATCH on:** 2026-02-12 13:18:21.643907
 
-0. METADATA HEADER (YAML FRONTMATTER)
+```yaml
 ---
 country: "United Kingdom"
 company_name: "BAM UK & Ireland"
@@ -11,6 +11,7 @@ detected_tech: ["Azure", "Azure Synapse", "Azure Data Factory", "Python", "Java"
 overlap_tech: ["Azure", "Python", "Java", "Scala", "SQL", "Snowflake", "Hadoop", "Spark", "Apache Kafka", "Power BI", "Microsoft Power Platform", "SharePoint"]
 primary_signals: ["Hiring Data Engineers for Azure/Synapse/Snowflake", "Strategic Migration to Autodesk Construction Cloud", "Deployment of Digital Twins (Autodesk Tandem)"]
 ---
+```
 
 1. DATA VALIDATION (Excel vs. Current 2026)
 | Data Point | Excel Value | Current (Jan 2026) | Verification Source |

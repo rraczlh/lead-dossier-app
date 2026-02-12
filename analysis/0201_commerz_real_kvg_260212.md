@@ -1,6 +1,6 @@
 **Generated via BATCH on:** 2026-02-12 13:18:22.824267
 
-0. METADATA HEADER (YAML FRONTMATTER)
+```yaml
 ---
 country: "Germany"
 company_name: "Commerz Real KVG"
@@ -11,6 +11,7 @@ detected_tech: ["Azure", "Infrastructure as Code (IaC)", "DevOps", "SAP", "ABAP"
 overlap_tech: ["Azure", "DevOps", "Java", "iOS"]
 primary_signals: ["Hiring Cloud Service Group for Azure/IaC", "Active Mobile App Development (hausInvest)", "SAP S/4HANA Migration Context"]
 ---
+```
 
 1. DATA VALIDATION (Excel vs. Current 2026)
 | Data Point | Excel Value | Current (Jan 2026) | Verification Source |

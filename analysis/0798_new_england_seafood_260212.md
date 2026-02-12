@@ -1,6 +1,5 @@
 **Generated via BATCH on:** 2026-02-12 13:18:32.778662
 
-0. METADATA HEADER (YAML FRONTMATTER)
 ```yaml
 ---
 country: "United Kingdom"

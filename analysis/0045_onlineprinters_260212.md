@@ -1,8 +1,6 @@
 **Generated via BATCH on:** 2026-02-12 13:18:20.929210
 
-Forensic Research Assistant (Strategic Edition)
-
-0. METADATA HEADER (YAML FRONTMATTER)
+```yaml
 ---
 country: "Germany"
 company_name: "Onlineprinters GmbH"
@@ -13,6 +11,7 @@ detected_tech: ["PHP", "Symfony", "Magento", "React", "TypeScript", "Tailwind CS
 overlap_tech: ["PHP", "React", "TypeScript", "Tailwind CSS", "MySQL", "Docker", "Kubernetes", "RabbitMQ", "Redis", "AWS"]
 primary_signals: ["Migration to Headless Commerce (React/Symfony)", "API Platform for Resellers", "Automated Production (IoT/Robotics Integration)"]
 ---
+```
 
 1. DATA VALIDATION (Excel vs. Current 2026)
 

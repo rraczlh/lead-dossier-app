@@ -1,6 +1,6 @@
 **Generated via BATCH on:** 2026-02-12 13:18:34.239950
 
-0. METADATA HEADER (YAML FRONTMATTER)
+```yaml
 ---
 country: "Sweden"
 company_name: "System Verification"
@@ -11,6 +11,7 @@ detected_tech: ["Python", "Java", "C#", "Azure", "Jenkins", "Kubernetes", "Docke
 overlap_tech: ["Python", "Java", "C#", "Azure", "Jenkins", "Kubernetes", "Docker", "Selenium", "Appium", "Azure DevOps", "Generative AI"]
 primary_signals: ["Hiring Test Automation Engineers (Java/Python)", "Strategic shift to AI-driven QA", "Expansion into Germany & Poland"]
 ---
+```
 
 1. DATA VALIDATION (Excel vs. Current 2026)
 | Data Point | Excel Value | Current (Jan 2026) | Verification Source |
