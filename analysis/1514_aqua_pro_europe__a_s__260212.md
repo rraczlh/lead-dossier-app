@@ -1,6 +1,7 @@
 **Generated via BATCH on:** 2026-02-12 13:18:44.151325
 
 ```yaml
+---
 country: "Slovakia"
 company_name: "AQUA PRO EUROPE, a.s."
 verified_revenue_usd: 7
@@ -9,6 +10,7 @@ kdm_status: "Active"
 detected_tech: ["Microsoft 365", "PHP", "Google Analytics", "Nginx", "Apache", "WooCommerce", "MySQL"]
 overlap_tech: ["Microsoft 365", "PHP", "MySQL", "Nginx"]
 primary_signals: ["Active E-shop with Client Login", "Market Consolidation (Acquisitions)", "Logistics Heavy Operations"]
+---
 ```
 
 # 1. DATA VALIDATION (Excel vs. Current 2026)
