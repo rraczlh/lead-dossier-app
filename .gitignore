@@ -1,5 +1,7 @@
 extract_tech.py
+extract_technologies.py
 detected_tech.csv
 /.roo/rules-code
 dashboard copy.py
 dashboard.bkp.py
+/analysis/technologies_list.csv
