@@ -1,11 +1,10 @@
 extract_tech.py
 extract_technologies.py
-detected_tech.csv
 dashboard copy.py
 dashboard.bkp.py
 gemini_api_key.txt
-generate_evidence_v1.py
-generate_evidence_v2.py
+generate_evidence.bkp.py
+generate_evidence.py
 Leads_List.xlsx
 technologies_list.csv
 analysis/archive/*
