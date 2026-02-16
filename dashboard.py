@@ -75,7 +75,7 @@ def load_dossiers():
     df = pd.DataFrame(data)
     
     # --- SAFETY FIX ---
-    required_cols = ['company_name', 'verified_revenue_usd', 'verified_revenue_text', 'detected_tech', 'body', 'yaml_block']
+    required_cols = ['country', 'company_name', 'verified_revenue_usd', 'verified_revenue_text', 'detected_tech', 'body', 'yaml_block']
     for col in required_cols:
         if col not in df.columns:
             df[col] = "" if col in ['body', 'yaml_block'] else None
@@ -199,13 +199,10 @@ if not df.empty:
                 if 'selected_company_id' not in st.session_state:
                     st.session_state.selected_company_id = None
                 
-                # Add Data-Driven Selection Indicator (Simple Arrow)
-                display_df['Sel'] = display_df['ID'].apply(lambda x: "➜" if x == st.session_state.selected_company_id else "")
-
                 display_cols = {
-                    'Sel': '',
                     'ID': 'ID',
                     'Company Name': 'Company',
+                    'country': 'Country',
                     'verified_revenue_usd': 'Revenue ($M)',
                     'detected_tech': 'Detected Tech'
                 }
@@ -222,9 +219,9 @@ if not df.empty:
                     selection_mode="single-row",
                     key="lead_table",
                     column_config={
-                        "": st.column_config.TextColumn("", width="small"),
                         "ID": st.column_config.TextColumn("ID", width="small"),
                         "Company": st.column_config.TextColumn("Company", width="medium"),
+                        "Country": st.column_config.TextColumn("Country", width="small"),
                         "Revenue ($M)": st.column_config.NumberColumn("Revenue ($M)", format="$%d"),
                         "Detected Tech": st.column_config.ListColumn("Detected Tech", width="large"),
                     }
