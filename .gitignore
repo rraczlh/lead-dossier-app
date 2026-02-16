@@ -17,3 +17,5 @@ __pycache__/
 
 # MacOS
 .DS_Store
+
+batch_history.json
