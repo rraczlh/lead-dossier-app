@@ -8,9 +8,6 @@ import plotly.express as px
 # 1. Setup Page
 st.set_page_config(layout="wide", page_title="Localhost Lead Intelligence")
 
-# 2. Setup (No Matrix)
-# The matrix has been removed as per user request. We now focus only on detected tech.
-
 # 2. Load Data Function
 @st.cache_data
 def load_dossiers():
@@ -233,7 +230,6 @@ if not df.empty:
                     selected_index = selection.selection.rows[0]
                     st.session_state.selected_company_id = display_df.iloc[selected_index]['ID']
                     # Rerun once more to update the ✅ indicator immediately after click
-                    st.rerun()
                 elif 'lead_table' in st.session_state and st.session_state.lead_table.selection.rows:
                     # Fallback to key-based session state if available
                     selected_index = st.session_state.lead_table.selection.rows[0]
