@@ -106,8 +106,9 @@ if not df.empty:
     # --- REVENUE FILTER (Synchronized Slider + Text Box) ---
     st.sidebar.subheader("Revenue (USD Millions)")
     
-    max_rev_data = int(df['verified_revenue_usd'].max()) if not df.empty else 1000
-    abs_max = max_rev_data + 100
+    max_rev_val = df['verified_revenue_usd'].max()
+    max_rev_data = int(max_rev_val) if pd.notna(max_rev_val) else 1000
+    abs_max = int(max_rev_data + 100)
     
     # Initialize session state for revenue
     if 'rev_range' not in st.session_state:
@@ -224,15 +225,19 @@ if not df.empty:
                     }
                 )
 
-                # Update selection from dataframe interaction
-                # selection.selection.rows is populated ONLY on the rerun triggered by a click
-                if selection.selection.rows:
-                    selected_index = selection.selection.rows[0]
-                    st.session_state.selected_company_id = display_df.iloc[selected_index]['ID']
-                    # Rerun once more to update the ✅ indicator immediately after click
-                elif 'lead_table' in st.session_state and st.session_state.lead_table.selection.rows:
-                    # Fallback to key-based session state if available
-                    selected_index = st.session_state.lead_table.selection.rows[0]
+                # Robust Selection Handling
+                # 1. Check direct return from st.dataframe
+                selection_data = getattr(selection, "selection", selection)
+                rows = selection_data.get("rows", []) if isinstance(selection_data, dict) else getattr(selection_data, "rows", [])
+                
+                # 2. Check session_state fallback
+                if not rows and 'lead_table' in st.session_state:
+                    state_val = st.session_state.lead_table
+                    state_selection = getattr(state_val, "selection", state_val)
+                    rows = state_selection.get("rows", []) if isinstance(state_selection, dict) else getattr(state_selection, "rows", [])
+
+                if rows:
+                    selected_index = rows[0]
                     st.session_state.selected_company_id = display_df.iloc[selected_index]['ID']
 
                 # Resolve selected_row from session_state ID

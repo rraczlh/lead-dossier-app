@@ -10,6 +10,7 @@ analysis/archive/*
 analysis/archive_state/*
 
 dashboard.bkp.py
+dashboard copy.py
 
 # Python
 __pycache__/
